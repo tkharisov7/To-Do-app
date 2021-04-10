@@ -1,7 +1,5 @@
 from task import Task
 from datetime import date
-from time import sleep
-import emoji
 import PySimpleGUI as sg
 import webbrowser
 import tkinter.font
@@ -9,12 +7,6 @@ import tkinter.font
 class GraphicsApp:
     undone_tasks_ = dict()
     done_tasks_ = dict()
-
-    class Colors:
-        OK = '\033[92m'  # GREEN
-        WARNING = '\033[93m'  # YELLOW
-        FAIL = '\033[91m'  # RED
-        RESET = '\033[0m'  # RESET COLOR
 
     def __init__(self):
         self.undone_tasks_ = dict()
@@ -145,7 +137,6 @@ class GraphicsApp:
         current_tasks = self.undone_tasks_[find_date]
         is_open = False
         while True:
-            # clear()
             if len(current_tasks) == 0:
                 del self.undone_tasks_[find_date]
                 sg.popup("No tasks left for today!")
