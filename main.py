@@ -1,5 +1,10 @@
-from lib import App
+from lib import ConsoleApp
+from lib import GraphicsApp
 
-current_app = App()
+gr_app = GraphicsApp()
 
-current_app.run()
+gr_app.run()
+
+# current_app = ConsoleApp()
+
+# current_app.run()
