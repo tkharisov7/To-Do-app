@@ -63,11 +63,9 @@ class GraphicsApp:
             today = date.today()
             frogs = []
             usual = []
-            print("Today is", today)
             if not (today in self.undone_tasks_):
-                print(self.Colors.OK + "Hooray! No tasks for today! You can chill and enjoy your life."
-                      + self.Colors.RESET)
-                sleep(3)
+                sg.popup("Hooray! No tasks for today! You can chill and enjoy your life.")
+                sleep(2)
                 # clear()
                 break
             for i in range(current_index, len(self.undone_tasks_[today])):
