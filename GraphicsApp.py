@@ -4,6 +4,7 @@ from time import sleep
 import emoji
 import PySimpleGUI as sg
 import webbrowser
+import tkinter.font
 
 class GraphicsApp:
     undone_tasks_ = dict()
@@ -59,14 +60,15 @@ class GraphicsApp:
 
     def __current(self):
         current_index = 0
+        is_open = False
         while True:
             today = date.today()
             frogs = []
             usual = []
             if not (today in self.undone_tasks_):
                 sg.popup("Hooray! No tasks for today! You can chill and enjoy your life.")
-                sleep(2)
-                # clear()
+                if is_open:
+                    window.close()
                 break
             for i in range(current_index, len(self.undone_tasks_[today])):
                 x = self.undone_tasks_[today][i]
@@ -82,114 +84,100 @@ class GraphicsApp:
                     usual.append(x)
             undone_amount = len(frogs) + len(usual)
             all_amount = undone_amount + (len(self.done_tasks_[today]) if (today in self.done_tasks_) else 0)
+            layout = [[sg.Text("Today is " + str(today))]]
             if undone_amount == 0:
-                print(self.Colors.OK + "Congratulations! You have done all tasks for today!" + self.Colors.RESET)
-                sleep(3)
-                # clear()
+                sg.popup("Congratulations! You have done all tasks for today!")
+                if is_open:
+                    window.close()
                 break
             else:
-                print(f'You have completed {all_amount - undone_amount} from {all_amount} tasks today. Good work!')
+                layout.append([sg.Text(f'You have completed {all_amount - undone_amount} from {all_amount} tasks today.'
+                                       f' Good work!')])
             if len(frogs) > 0:
                 current_task = frogs[len(frogs) - 1]
             else:
                 current_task = usual[len(usual) - 1]
-            print("Current task:", self.Colors.OK + current_task.title_ + self.Colors.RESET)
-            print("Is frog?", emoji.emojize(':frog:'), end="")
+            layout.append([sg.Text("Current task:")])
+            layout.append([sg.Text(current_task.title_, font=tkinter.font.ITALIC)])
+            layout.append([sg.Text("Is frog?")])
+            # print("Is frog?", emoji.emojize(':frog:'), end="")
             if current_task.is_frog_:
-                print(self.Colors.OK + " Yes" + self.Colors.RESET)
+                layout.append([sg.Text("Yes", text_color='#00FF00')])
             else:
-                print(self.Colors.FAIL + " No" + self.Colors.RESET)
-            print("Type DONE if task is done.")
-            print("Type SKIP if you want to skip the task.")
-            print("Type RETURN if you want to return to the main menu.")
-            x = str(input())
-            if x.lower() != "done" and x.lower() != "skip" and x.lower != "return":
-                print(self.Colors.FAIL + "Incorrect input! Please, try again." + self.Colors.RESET)
-                sleep(1)
-                # clear()
-                continue
-            if x.lower() == "done":
+                layout.append([sg.Text("No", text_color='#FF0000')])
+            layout.append([sg.Button("Done")])
+            layout.append([sg.Button("Skip")])
+            layout.append([sg.Button("Return")])
+            window = sg.Window("Current wokflow", layout, resizable=True)
+            is_open = True
+            event, value = window.read()
+            if event == "Done":
                 if not (today in self.done_tasks_):
                     self.done_tasks_[today] = []
                 self.done_tasks_[today].append(current_task)
                 self.undone_tasks_[today].remove(current_task)
                 if not self.undone_tasks_[today]:
                     del self.undone_tasks_[today]
-                # clear()
+                window.close()
+                is_open = False
                 continue
-            if x.lower() == "skip":
+            if event == "Skip":
                 if current_task.is_frog_:
-                    print(self.Colors.FAIL + "You can't skip the frog!" + self.Colors.RESET)
-                    sleep(1)
-                    # clear()
+                    sg.popup("You can't skip the frog!")
+                    window.close()
                     continue
                 current_index += 1
                 current_index %= len(self.undone_tasks_[today])
-                # clear()
+                is_open = False
+                window.close()
                 continue
-            if x.lower() == "return":
-                # clear()
+            if event == "Return" or event == sg.WIN_CLOSED:
+                window.close()
+                is_open = False
                 break
 
     def __manage(self):
-        find_date = date(2020, 1, 1)
-        while True:
-            print("Write the task date in format <year>-<month>-<day>. (Example: '2002-3-26')")
-            date_str = str(input())
-            try:
-                year, month, day = map(int, date_str.split('-'))
-                find_date = date(year, month, day)
-                # print(new_task.date_)
-                # clear()
-                break
-            except:
-                print(self.Colors.FAIL + "Wrong format!!!" + self.Colors.RESET)
-                sleep(1)
-                # clear()
-                continue
+        date_list = sg.popup_get_date()
+        find_date = date(date_list[2], date_list[0], date_list[1])
         if not (find_date in self.undone_tasks_):
-            print(self.Colors.OK + "No tasks at this date" + self.Colors.RESET)
-            sleep(1)
-            # clear()
+            sg.popup("No tasks at this date!")
             return
         current_tasks = self.undone_tasks_[find_date]
+        is_open = False
         while True:
             # clear()
             if len(current_tasks) == 0:
                 del self.undone_tasks_[find_date]
-                print("No tasks left for today!")
-                sleep(1)
-                # clear()
+                sg.popup("No tasks left for today!")
+                if is_open:
+                    window.close()
                 return
-            print("Tasks for", find_date)
+            layout = [[sg.Text("Tasks for " + str(find_date))]]
             i = 0
             for task in current_tasks:
                 i += 1
-                print(str(i) + ")", task.title_, emoji.emojize(':frog:'), end="")
+                temp = [sg.Text(str(i) + ")"), sg.Text(task.title_, font=tkinter.font.ITALIC), sg.Text("Is frog? ")]
                 if task.is_frog_:
-                    print(self.Colors.OK + " Yes" + self.Colors.RESET)
+                    temp.append(sg.Text("Yes", text_color='#00FF00'))
                 else:
-                    print(self.Colors.FAIL + " No" + self.Colors.RESET)
-            print("Type 'delete N', where the N is the number of task.")
-            print("Type 'return' to return to the main menu.")
-            s = str(input())
-            if s.lower().find("return") > -1:
-                # clear()
+                    temp.append(sg.Text("No", text_color='#FF0000'))
+                temp.append(sg.Button("Delete", key=i))
+                layout.append(temp)
+            layout.append([sg.Button("Return")])
+            window = sg.Window("Manage", layout)
+            is_open = True
+            event, value = window.read()
+            if event == "Return" or sg.WIN_CLOSED:
+                window.close()
                 return
-            try:
-                s1, number = s.split(' ')
-                number = int(number)
-            except:
-                print(self.Colors.FAIL + "Wrong format!!!" + self.Colors.RESET)
-                sleep(1)
+            print(event)
+            if 1 <= event <= len(current_tasks):
+                self.undone_tasks_[find_date].pop(event - 1)
+                sg.popup("Task was successfully deleted.")
+                window.close()
+                is_open = False
                 continue
-            if s1.lower() == "delete" and 1 <= number <= len(current_tasks):
-                self.undone_tasks_[find_date].pop(number - 1)
-                print(self.Colors.OK + "Task was successfully deleted." + self.Colors.RESET)
-                sleep(1)
-                continue
-            print(self.Colors.FAIL + "Wrong format!!!" + self.Colors.RESET)
-            sleep(1)
+
 
     def run(self):
         layout = [[sg.Text("Choose what to do:")], [sg.Button("Add task")], [sg.Button("Current tasks")],
