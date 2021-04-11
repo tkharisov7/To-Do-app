@@ -1,5 +1,5 @@
-from lib import ConsoleApp
-from lib import GraphicsApp
+from consoleapp import ConsoleApp
+from GraphicsApp import GraphicsApp
 
 gr_app = GraphicsApp()
 
